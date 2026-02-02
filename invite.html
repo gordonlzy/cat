@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Special Invitation</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;1,500&display=swap" rel="stylesheet">
+ <style>
+ :root{--paper:#ffffff;--ink:#162a44;--gold:#c5a059;--desk:#dcd4c9;--catY:#1e2a38;--catN:#4a5568}
+  *{box-sizing:border-box}
+  body{margin:0;height:100vh;display:flex;justify-content:center;align-items:center;background:var(--paper);font-family:'EB Garamond',serif;overflow:hidden}
+  .card{position:relative;width:94%;max-width:720px;height:520px;background:var(--paper);box-shadow:0 30px 90px rgba(0,0,0,.12);padding:36px;border-radius:12px;border:2px solid var(--gold)}
+  .writing{margin-top:38px;text-align:center;width:100%;max-width:86%;margin-left:auto;margin-right:auto}
+  .line{font-family:'Dancing Script',cursive;font-size:clamp(20px,5vw,42px);color:var(--ink);white-space:nowrap;overflow:hidden;width:0;margin:0 auto 12px;display:inline-block}
+  #pen{position:absolute;width:240px;z-index:1000;display:none;filter:drop-shadow(15px 25px 12px rgba(0,0,0,.2))}
+  #catsStage{position:absolute;inset:0;opacity:0;transition:opacity 1s}
+  .catWrap{position:absolute;width:200px;height:170px}
+  .catWrap img{position:absolute;left:0;bottom:0;width:200px;height:auto;image-rendering:auto;z-index:1}
+  .success{display:none;position:absolute;inset:0;background:var(--paper);border-radius:10px;justify-content:center;align-items:center;text-align:center}
+  .success h1{font-family:'Dancing Script',cursive;font-size:4rem;color:var(--ink);margin:0}
+  .success p{font-size:1.2rem;color:var(--gold)}
+  .btn{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;gap:10px;padding:8px 14px;background:#fff;border:1.5px solid var(--gold);border-radius:9999px;color:var(--ink);font-size:1rem;letter-spacing:.01em;box-shadow:0 8px 18px rgba(0,0,0,.12);z-index:5;cursor:pointer;transition:transform .2s ease, box-shadow .2s ease}
+  .btn:hover{transform:translateX(-50%) translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.16)}
+  .btn svg{width:18px;height:18px;fill:var(--gold)}
+  @keyframes floatPulse{0%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-2px)}100%{transform:translateX(-50%) translateY(0)}}
+  #yesCat .btn{animation:floatPulse 2.4s ease-in-out infinite}
+  
+ </style>
+</head>
+<body>
+<div class="card" id="paper">
+  <svg id="pen" viewBox="0 0 200 60">
+    <path d="M0 30 L45 10 C45 10 60 15 60 30 C60 45 45 50 45 50 Z" fill="var(--gold)"/>
+    <rect x="55" y="20" width="145" height="20" rx="10" fill="#0d1b2a"/>
+    <path d="M55 27 L190 27" stroke="rgba(255,255,255,.08)" stroke-width="3"/>
+  </svg>
+  <div class="writing" id="writing"></div>
+  <div id="catsStage">
+    <div class="catWrap" id="yesCat" style="left:12%;bottom:90px">
+      <img id="yesCatImg" src="yes1.jpg" alt="yes cat"/>
+    </div>
+    <div class="catWrap" id="noCat" style="right:12%;bottom:90px">
+      <img id="noCatImg" src="no1.jpg" alt="no cat"/>
+    </div>
+  </div>
+  <div class="success" id="success">
+    <div>
+      <h1>It's a date.</h1>
+      <p>See you on Saturday!</p>
+    </div>
+  </div>
+</div>
+<script>
+const pen=document.getElementById('pen');
+const paper=document.getElementById('paper');
+const writing=document.getElementById('writing');
+const catsStage=document.getElementById('catsStage');
+const yesCat=document.getElementById('yesCat');
+const noCat=document.getElementById('noCat');
+const success=document.getElementById('success');
+const yesCatImg=document.getElementById('yesCatImg');
+const noCatImg=document.getElementById('noCatImg');
+const YES_IDLE_SRC='yes1.jpg';
+const NO_IDLE_SRC='no1.jpg';
+const NO_FRAMES_SRC=['no2.jpg','no3.jpg','no4.jpg','no5.jpg','no6.jpg'];
+let NO_FRAMES_T=[];
+let NO_IDLE_T='';
+let YES_IDLE_T='';
+let nX=0,nY=0,mX=0,mY=0;
+let vx=0,vy=0,lastT=0;
+let baseY=0;
+const isFileOrigin = location.protocol === 'file:' || location.origin === 'null';
+const message="Hi Charmaine, would you be my Valentine's Day date?";
+function layoutTwoLines(msg){
+  const maxW=(writing.clientWidth||0)-16;
+  const measure=document.createElement('div');
+  measure.className='line';
+  measure.style.position='absolute';
+  measure.style.left='-9999px';
+  measure.style.width='auto';
+  measure.style.whiteSpace='nowrap';
+  writing.appendChild(measure);
+  const words=msg.split(' ');
+  function widthOf(arr){measure.textContent=arr.join(' ');return measure.scrollWidth}
+  let low=1, high=Math.max(1, words.length-1), best=1;
+  while(low<=high){
+    const mid=(low+high)>>1;
+    const w1=widthOf(words.slice(0,mid));
+    const w2=widthOf(words.slice(mid));
+    if(w1<=maxW && w2<=maxW){best=mid;low=mid+1}
+    else if(w1>maxW){high=mid-1}
+    else {low=mid+1}
+  }
+  writing.removeChild(measure);
+  writing.innerHTML='';
+  const l1=document.createElement('div');
+  l1.className='line'; l1.textContent=words.slice(0,best).join(' ');
+  const l2=document.createElement('div');
+  l2.className='line'; l2.textContent=words.slice(best).join(' ');
+  writing.appendChild(l1); writing.appendChild(l2);
+  l1.style.width='0px'; l2.style.width='0px';
+  return [l1,l2];
+}
+function toTransparent(src){
+  return new Promise((resolve,reject)=>{
+    if(isFileOrigin){ resolve(src); return; }
+    const img=new Image();
+    img.onload=()=>{
+      const c=document.createElement('canvas');
+      c.width=img.naturalWidth; c.height=img.naturalHeight;
+      const ctx=c.getContext('2d');
+      ctx.drawImage(img,0,0);
+      let id;
+      try{ id=ctx.getImageData(0,0,c.width,c.height); }
+      catch(e){ resolve(src); return; }
+      const d=id.data; const tol=250; const diff=22;
+      for(let i=0;i<d.length;i+=4){
+        const r=d[i],g=d[i+1],b=d[i+2];
+        const max=r>g?r:g; const max2=max>b?max:b;
+        const min=r<g?r:g; const min2=min<b?min:b;
+        if(max2>tol && (max2-min2)<diff){ d[i+3]=0; }
+      }
+      ctx.putImageData(id,0,0);
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror=reject; img.src=src;
+  });
+}
+function writeLine(el){
+  return new Promise(resolve=>{
+    pen.style.display='block';
+    const maxW=(writing.clientWidth||0)-16;
+    const totalW=el.scrollWidth;
+    const lineW=Math.min(totalW,maxW);
+    el.style.width='0px';
+    const paperRect=paper.getBoundingClientRect();
+    let start=null; const pxPerMs=0.25; const duration=lineW/pxPerMs;
+    function step(ts){
+      if(!start) start=ts;
+      const prog=Math.min((ts-start)/duration,1);
+      const reveal=lineW*prog;
+      el.style.width=reveal+'px';
+      const penH=pen.getBoundingClientRect().height||72;
+      const nibY=penH*0.5;
+      const rect=el.getBoundingClientRect();
+      const baseline=(rect.top-paperRect.top)+rect.height*0.68;
+      pen.style.left = ((rect.left-paperRect.left)+reveal-4)+'px';
+      pen.style.top = (baseline - nibY)+'px';
+      pen.style.transform = 'rotate(-28deg)';
+      if(prog>=1){resolve(); return;}
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+}
+async function init(){await new Promise(r=>setTimeout(r,700));if(document.fonts && document.fonts.ready){try{await document.fonts.ready}catch{}}
+const lines=layoutTwoLines(message);for(const el of lines){await writeLine(el)}pen.style.display='none';catsStage.style.opacity='1';
+if(isFileOrigin){
+  YES_IDLE_T=YES_IDLE_SRC; NO_IDLE_T=NO_IDLE_SRC;
+  yesCatImg.src=YES_IDLE_T; noCatImg.src=NO_IDLE_T;
+  NO_FRAMES_T=NO_FRAMES_SRC.slice();
+  noCatImg.style.mixBlendMode='multiply';
+} else {
+  YES_IDLE_T=await toTransparent(YES_IDLE_SRC); NO_IDLE_T=await toTransparent(NO_IDLE_SRC);
+  yesCatImg.src=YES_IDLE_T; noCatImg.src=NO_IDLE_T;
+  NO_FRAMES_T=await Promise.all(NO_FRAMES_SRC.map(s=>toTransparent(s)));
+}
+const pRect=paper.getBoundingClientRect();const nRect=noCat.getBoundingClientRect();nX=nRect.left-pRect.left;nY=nRect.top-pRect.top;baseY=paper.clientHeight-noCat.offsetHeight-90;noCat.style.top=baseY+'px';yesCat.style.top=(paper.clientHeight-yesCat.offsetHeight-90)+'px';yesCat.style.bottom='auto';animate(performance.now())}
+document.addEventListener('mousemove',e=>{const r=paper.getBoundingClientRect();mX=e.clientX-r.left;mY=e.clientY-r.top});
+let frameTimer=0;
+function animate(t){
+  if(!lastT) lastT=t;
+  const dt=Math.min((t-lastT)/1000,0.05);
+  lastT=t;
+  const cx=nX+80,cy=nY+70;
+  const dx=cx-mX,dy=cy-mY;
+  const dist=Math.hypot(dx,dy);
+  const fearR=200;
+  const catW=noCat.offsetWidth;
+  const minX=10, maxX=paper.clientWidth-catW-10;
+  const minY=Math.max(120, baseY-60);
+  const maxY=Math.min(paper.clientHeight-noCat.offsetHeight-20, baseY+60);
+  let dirX=0,dirY=0;
+  if(dist<fearR){
+    dirX=dx/(dist||1);
+    dirY=dy/(dist||1);
+    const cX=(minX+maxX)/2,cY=(minY+maxY)/2;
+    dirX = dirX*0.9 + (nX<cX?0.1:-0.1);
+    dirY = dirY*0.9 + (nY<cY?0.1:-0.1);
+    const dLen=Math.hypot(dirX,dirY)||1;
+    dirX/=dLen; dirY/=dLen;
+  }
+  const targetSpeed=160;
+  const accelBlend=Math.min(1, dt*8);
+  if(dist<fearR){
+    const tx=dirX*targetSpeed, ty=dirY*targetSpeed;
+    vx += (tx - vx) * accelBlend;
+    vy += (ty - vy) * accelBlend;
+  } else {
+    const decelBlend=Math.min(1, dt*6);
+    vx += (0 - vx) * decelBlend;
+    vy += (0 - vy) * decelBlend;
+  }
+  const spd=Math.hypot(vx,vy);
+  nX+=vx*dt; nY+=vy*dt;
+  nX=Math.max(minX,Math.min(maxX,nX));
+  nY=Math.max(minY,Math.min(maxY,nY));
+  noCat.style.left=nX+'px';
+  noCat.style.top=nY+'px';
+  if(dist<fearR && spd>10){
+    frameTimer += (spd/targetSpeed) * dt * 12;
+    noCatImg.src = NO_FRAMES_T[Math.floor(frameTimer)%NO_FRAMES_T.length] || noCatImg.src;
+  } else {
+    noCatImg.src = NO_IDLE_T || noCatImg.src;
+  }
+  requestAnimationFrame(animate);
+}
+yesCat.addEventListener('click',()=>{catsStage.style.display='none';success.style.display='flex';const msg=success.querySelector('p');if(msg)msg.textContent='See you on Saturday!'})
+window.onload=init
+</script>
+</body>
+</html>
