@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>A Special Invitation</title>
+<title>For Charmaine</title>
 <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=EB+Garamond:ital,wght@0,400;1,500&display=swap" rel="stylesheet">
  <style>
  :root{--paper:#ffffff;--ink:#162a44;--gold:#c5a059;--desk:#dcd4c9;--catY:#1e2a38;--catN:#4a5568}
@@ -13,7 +13,7 @@
   .writing{margin-top:38px;text-align:center;width:100%;max-width:86%;margin-left:auto;margin-right:auto}
   .line{font-family:'Dancing Script',cursive;font-size:clamp(20px,5vw,42px);color:var(--ink);white-space:nowrap;overflow:hidden;width:0;margin:0 auto 12px;display:inline-block}
   #pen{position:absolute;width:240px;z-index:1000;display:none;filter:drop-shadow(15px 25px 12px rgba(0,0,0,.2))}
-  #catsStage{position:absolute;inset:0;opacity:0;transition:opacity 1s}
+  #catsStage{position:absolute;inset:0;opacity:1;transition:none}
   .catWrap{position:absolute;width:200px;height:170px}
   .catWrap img{position:absolute;left:0;bottom:0;width:200px;height:auto;image-rendering:auto;z-index:1}
   .success{display:none;position:absolute;inset:0;background:var(--paper);border-radius:10px;justify-content:center;align-items:center;text-align:center}
@@ -154,7 +154,8 @@ function writeLine(el){
   });
 }
 async function init(){await new Promise(r=>setTimeout(r,700));if(document.fonts && document.fonts.ready){try{await document.fonts.ready}catch{}}
-const lines=layoutTwoLines(message);for(const el of lines){await writeLine(el)}pen.style.display='none';catsStage.style.opacity='1';
+catsStage.style.opacity='1';
+const lines=layoutTwoLines(message);for(const el of lines){await writeLine(el)}pen.style.display='none';
 if(isFileOrigin){
   YES_IDLE_T=YES_IDLE_SRC; NO_IDLE_T=NO_IDLE_SRC;
   yesCatImg.src=YES_IDLE_T; noCatImg.src=NO_IDLE_T;
